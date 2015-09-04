@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity overwriteListJsp="false" text="角色权限" dto="true"
+        noController="true" noListJsp="true">
+    <description>This is for role permission link</description>
+
+    <key name="role_id" type="long" generated="false" />
+    <key name="permission" type="string" generated="false" />
+
+</entity>

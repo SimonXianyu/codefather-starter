@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- configure shiro here -->
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+		xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			">
+    <context:annotation-config />
+
+    <!--<bean id="dbRealm" class="org.apache.shiro.realm.jdbc.JdbcRealm">-->
+        <!--<property name="dataSource" ref="dataSource" />-->
+        <!--<property name="permissionsLookupEnabled" value="true" />-->
+        <!--<property name="authenticationQuery"-->
+                  <!--value="SELECT PASSWORD FROM man_user WHERE USERNAME=?" />-->
+        <!--<property name="userRolesQuery"-->
+                  <!--value="SELECT role_id FROM man_user_role ur  WHERE ur.username=?" />-->
+        <!--<property name="permissionsQuery"-->
+                  <!--value="SELECT PERMISSION FROM man_role_perm rp  WHERE rp.role_id=? "/>-->
+        <!--<property name="credentialsMatcher">-->
+            <!--<bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">-->
+                <!--<property name="hashAlgorithmName" value="MD5" />-->
+            <!--</bean>-->
+        <!--</property>-->
+    <!--</bean>-->
+    <bean id="realmFactory" class="ca.paypos.iam.admin.util.shiro.ShiroRealmFactoryBean">
+        <property name="enabledRealm" value="${enabledRealm}" />
+        <property name="realmMap">
+            <map>
+                <entry key="mongo" value-ref="mongoRealm" />
+                <entry key="cas" value-ref="casRealm" />
+            </map>
+        </property>
+    </bean>
+    <bean id="mongoRealm" class="io.github.simonxianyu.util.mongo.MongoRealm" init-method="springInit">
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <property name="hashAlgorithmName" value="MD5" />
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="casRealm" class="ca.paypos.iam.admin.util.shiro.MyCasRealm">
+        <property name="defaultRoles" value="ROLE_USER" />
+        <property name="casServerUrlPrefix" value="${casUrl}" />
+        <property name="casService" value="${serverUrl}/shiro-cas" />
+    </bean>
+
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!-- Single realm app.  If you have multiple realms, use the 'realms' property instead. -->
+        <property name="realm" ref="realmFactory"/>
+        <property name="sessionManager" ref="sessionManager" />
+    </bean>
+
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="sessionIdCookie">
+            <bean class="org.apache.shiro.web.servlet.SimpleCookie">
+                <property name="name" value="IAMSESSIONID" />
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <!-- override these for application-specific URLs if you like:
+        <property name="loginUrl" value="/login.jsp"/>
+        <property name="successUrl" value="/home.jsp"/> -->
+        <!--<property name="loginUrl" value="/loginform"/>-->
+        <property name="loginUrl" value="${casUrl}/login?service=${casCallbackUrl}"/>
+        <property name="successUrl" value="/index"/>
+        <property name="unauthorizedUrl" value="/not-authorized"/>
+        <!-- The 'filters' property is not necessary since any declared javax.servlet.Filter bean  -->
+        <!-- defined will be automatically acquired and available via its beanName in chain        -->
+        <!-- definitions, but you can perform instance overrides or name aliases here if you like: -->
+        <!-- <property name="filters">
+            <util:map>
+                <entry key="anAlias" value-ref="someFilter"/>
+            </util:map>
+        </property> -->
+        <property name="filterChainDefinitions">
+            <value>
+                / = anon
+                /favicon.ico=anon
+                /loginform= roles[ROLE_USER]
+                # /logout = logout
+
+                /lte/** = anon
+                /static/** = anon
+
+                /not-authenticated = anon
+                /not-authorized = roles[ROLE_USER]
+
+                /error/**=anon
+                /error404=anon
+                /error500=anon
+
+                /shiro-cas = cas
+
+                /** = roles[ROLE_USER]
+                # more URL-to-FilterChain definitions here
+            </value>
+        </property>
+    </bean>
+
+    <bean id="anon" class="org.apache.shiro.web.filter.authc.AnonymousFilter" />
+    <!-- use local MyFormAuthenticationFilter to save local user information -->
+    <bean id="cas" class="org.apache.shiro.cas.CasFilter">
+        <property name="loginUrl" value="${casUrl}/login?service=${casCallbackUrl}"/>
+        <property name="failureUrl" value="/not-authenticated" />
+    </bean>
+    <bean id="authc" class="ca.paypos.iam.admin.util.AdminFormAuthenticationFilter">
+        <!--<property name="successUrl" value="/" />-->
+    </bean>
+    <!--<bean id="logout" class="org.apache.shiro.web.filter.authc.LogoutFilter">-->
+        <!--<property name="redirectUrl" value="/loginform" />-->
+    <!--</bean>-->
+    <bean id="roles" class="org.apache.shiro.web.filter.authz.RolesAuthorizationFilter" />
+    <bean id="perm" class="org.apache.shiro.web.filter.authz.PermissionsAuthorizationFilter" />
+
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+
+</beans>

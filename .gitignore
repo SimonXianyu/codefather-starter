@@ -1,0 +1,23 @@
+#common ignore
+*.bak
+*.log
+logs/
+build/
+bin/
+output/
+*.tmp
+~*
+
+# ignore eclipse
+.settings
+.project
+.classpath
+
+# intellij
+.idea
+*.iml
+
+# ignore for project
+src/main/webapp/WEB-INF/ftl/**/inc-*.ftl
+env-local.properties
+src/main/java/**/*Base.java

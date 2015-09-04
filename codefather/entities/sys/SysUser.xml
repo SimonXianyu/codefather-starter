@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity overwriteListJsp="false" text="用户">
+    <description>User in system, created when ldap login passed</description>
+
+    <key name="username" type="string" generated="false" />
+    <property name="password" type="string" nogrid="1" noTrans="1" text="密码" />
+    <property name="display_name" type="string" text="显示名" />
+    <property name="intro" type="string" nogrid="1" text="说明" />
+
+    <property name="last_login" type="date" nogrid="1" text="上次登录时间" />
+</entity>

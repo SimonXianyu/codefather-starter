@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity overwriteListJsp="false" text="用户角色"
+        noController="true" noListJsp="true">
+    <description>This is for user role relation.</description>
+
+    <key name="username" type="string" generated="false" />
+    <key name="role_id" type="long" generated="false" />
+
+</entity>

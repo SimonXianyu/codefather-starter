@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity overwriteListJsp="false" text="角色">
+    <description>This is for role definition</description>
+
+    <key name="id" type="long" generated="true" />
+    <property name="name" type="string" text="角色名称" />
+    <property name="intro" type="string" nogrid="1" text="说明" />
+
+</entity>
